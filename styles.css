@@ -75,6 +75,12 @@ footer span:first-child { color: var(--ink); }
 .share-options button:hover { border-color: var(--ink); background: var(--ink); color: white; }
 .platform-mark { width: 31px; height: 31px; display: grid; place-items: center; flex: 0 0 auto; border: 1px solid currentColor; border-radius: 50%; font-size: 16px; font-weight: 600; }
 .platform-mark.facebook { font-family: Arial, sans-serif; font-size: 20px; }
+.shared-card-page .site-header, .shared-card-page footer, .shared-card-page .compose-view, .shared-card-page .share-dialog { display: none !important; }
+.shared-card-page main { min-height: 100dvh; display: grid; place-items: center; padding: 24px; }
+.shared-card-view { width: min(100%, 760px); }
+.shared-card { min-height: min(70vh, 560px); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid var(--ink); background: var(--ink); color: white; padding: clamp(28px, 6vw, 64px); }
+.shared-card p { margin: 0; font-size: clamp(34px, 6vw, 72px); line-height: 1.02; letter-spacing: -.075em; overflow-wrap: anywhere; }
+.shared-card span { margin-top: 36px; color: rgb(255 255 255 / .65); font-size: 15px; }
 
 @media (max-width: 820px) {
   .section-shell, .nav-shell, .compose-shell { width: min(100% - 32px, 1240px); }
@@ -113,4 +119,6 @@ footer span:first-child { color: var(--ink); }
   .share-dialog__panel h2 { font-size: 31px; }
   .share-options { grid-template-columns: 1fr; }
   .share-options button { min-height: 58px; }
+  .shared-card-page main { padding: 16px; }
+  .shared-card { min-height: calc(100dvh - 32px); padding: 28px; }
 }
