@@ -7,6 +7,14 @@ const samples = [
   { text: 'Hôm nay mình đã nghỉ năm phút trước khi trả lời một email khó.', time: 'tuần trước' }
 ];
 
+const SUPABASE_URL = 'https://qtwdqoeogcslimshfemq.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_IHnTSnKC5n7gQ6kVp2MWIA_IocB-6VJ';
+const API_HEADERS = {
+  apikey: SUPABASE_PUBLISHABLE_KEY,
+  Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+  'Content-Type': 'application/json'
+};
+
 const form = document.querySelector('#entry-form');
 const input = document.querySelector('#entry');
 const count = document.querySelector('#count');
@@ -17,6 +25,7 @@ const openButtons = document.querySelectorAll('[data-open-compose]');
 const closeButtons = document.querySelectorAll('[data-close-compose]');
 const shareDialog = document.querySelector('#share-dialog');
 let selectedEntry = null;
+let publishedEntries = [];
 
 function escapeHTML(value) {
   const div = document.createElement('div');
@@ -25,8 +34,32 @@ function escapeHTML(value) {
 }
 
 function allEntries() {
-  try { return [...JSON.parse(localStorage.getItem('work-journal-entries') || '[]'), ...samples]; }
-  catch { return samples; }
+  return [...publishedEntries, ...samples];
+}
+
+function relativeTime(value) {
+  const seconds = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 1000));
+  if (seconds < 90) return 'vừa xong';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} phút trước`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} giờ trước`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return 'hôm qua';
+  if (days < 7) return `${days} ngày trước`;
+  return 'tuần trước';
+}
+
+async function loadPublishedEntries() {
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/notes?select=id,body,created_at&order=created_at.desc&limit=48`, { headers: API_HEADERS });
+    if (!response.ok) throw new Error('Không thể tải nhật ký chung.');
+    const notes = await response.json();
+    publishedEntries = notes.map((note) => ({ id: note.id, text: note.body, time: relativeTime(note.created_at) }));
+    render();
+  } catch {
+    showNotice('Chưa thể tải nhật ký chung. Hãy thử lại sau.');
+  }
 }
 
 function columnCount() {
@@ -127,23 +160,37 @@ document.addEventListener('keydown', (event) => {
 });
 
 input.addEventListener('input', () => { count.textContent = input.value.length; });
-form.addEventListener('submit', (event) => {
+form.addEventListener('submit', async (event) => {
   event.preventDefault();
   const text = input.value.trim();
   if (!text) { showNotice('Hãy nhập một mẩu ghi để đăng.'); return; }
   if (/(@|https?:\/\/|\b[A-ZÀ-Ỹ][a-zà-ỹ]{1,}\s+[A-ZÀ-Ỹ][a-zà-ỹ]{1,})/.test(text)) {
     showNotice('Hãy xoá tên, liên kết hoặc dấu hiệu có thể nhận diện người khác trước khi đăng.'); return;
   }
-  let entries = [];
-  try { entries = JSON.parse(localStorage.getItem('work-journal-entries') || '[]'); } catch { entries = []; }
-  entries.unshift({ text, time: 'vừa xong' });
-  localStorage.setItem('work-journal-entries', JSON.stringify(entries));
-  form.reset();
-  count.textContent = '0';
-  render();
-  closeCompose();
-  document.querySelector('#nhat-ky').scrollIntoView({ behavior: 'smooth' });
-  showNotice('Mẩu ghi của bạn đã xuất hiện trên nhật ký.');
+  const submit = form.querySelector('button[type="submit"]');
+  submit.disabled = true;
+  submit.textContent = 'Đang đăng…';
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/notes`, {
+      method: 'POST',
+      headers: { ...API_HEADERS, Prefer: 'return=representation' },
+      body: JSON.stringify({ body: text })
+    });
+    if (!response.ok) throw new Error('Không thể đăng mẩu ghi.');
+    const [note] = await response.json();
+    publishedEntries.unshift({ id: note.id, text: note.body, time: relativeTime(note.created_at) });
+    form.reset();
+    count.textContent = '0';
+    render();
+    closeCompose();
+    document.querySelector('#nhat-ky').scrollIntoView({ behavior: 'smooth' });
+    showNotice('Mẩu ghi đã được đăng cho mọi người cùng xem.');
+  } catch {
+    showNotice('Không thể đăng lúc này. Hãy thử lại sau.');
+  } finally {
+    submit.disabled = false;
+    submit.textContent = 'Đăng ẩn danh';
+  }
 });
 
 grid.addEventListener('click', (event) => {
@@ -183,4 +230,7 @@ function renderSharedCard(entry) {
 
 const sharedCard = sharedCardFromUrl();
 if (sharedCard) renderSharedCard(sharedCard);
-else render();
+else {
+  render();
+  loadPublishedEntries();
+}
