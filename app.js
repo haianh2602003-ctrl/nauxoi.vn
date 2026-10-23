@@ -99,8 +99,8 @@ function closeCompose() {
 }
 
 function shareLink() {
-  const url = new URL(window.location.href);
-  url.hash = `card=${encodeURIComponent(JSON.stringify(selectedEntry || samples[0]))}`;
+  const url = new URL(window.location.origin + window.location.pathname);
+  url.hash = 'nhat-ky';
   return url.toString();
 }
 
@@ -214,25 +214,7 @@ function showNotice(message) {
   timeout = setTimeout(() => notice.classList.remove('is-visible'), 3600);
 }
 
-function sharedCardFromUrl() {
-  try {
-    const raw = new URLSearchParams(window.location.hash.slice(1)).get('card');
-    const entry = raw ? JSON.parse(raw) : null;
-    return entry && typeof entry.text === 'string' && typeof entry.time === 'string' ? entry : null;
-  } catch { return null; }
-}
-
-function renderSharedCard(entry) {
-  document.title = 'Mẩu ghi ẩn danh · Nhật ký công sở';
-  document.body.classList.add('shared-card-page');
-  document.querySelector('main').innerHTML = `<section class="shared-card-view"><article class="shared-card"><p>${escapeHTML(entry.text)}</p><span>ẩn danh · ${escapeHTML(entry.time)}</span></article></section>`;
-}
-
-const sharedCard = sharedCardFromUrl();
-if (sharedCard) renderSharedCard(sharedCard);
-else {
-  render();
-  loadPublishedEntries();
-  window.addEventListener('visibilitychange', () => { if (!document.hidden) loadPublishedEntries(); });
-  window.setInterval(() => { if (!document.hidden) loadPublishedEntries(); }, 15000);
-}
+render();
+loadPublishedEntries();
+window.addEventListener('visibilitychange', () => { if (!document.hidden) loadPublishedEntries(); });
+window.setInterval(() => { if (!document.hidden) loadPublishedEntries(); }, 15000);
