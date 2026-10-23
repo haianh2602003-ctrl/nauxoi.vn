@@ -35,8 +35,8 @@ function columnCount() {
 
 function card(entry, index) {
   return `<article class="entry-card">
-    <div class="entry-object">${escapeHTML(entry.text)}</div>
-    <div class="entry-meta"><span>ẩn danh · ${entry.time}</span><button type="button" class="empathy" data-index="${index}">đồng cảm <span>○</span></button></div>
+    <div class="entry-object"><span>${escapeHTML(entry.text)}</span><button type="button" class="empathy" data-index="${index}" aria-label="Đồng cảm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2S4 15.6 4 9.5C4 6.8 6 5 8.5 5c1.7 0 2.9.9 3.5 2 0 0 1.8-2 3.5-2C18 5 20 6.8 20 9.5c0 6.1-8 10.7-8 10.7Z"/></svg></button></div>
+    <div class="entry-meta"><span>ẩn danh · ${entry.time}</span></div>
   </article>`;
 }
 
@@ -93,7 +93,7 @@ grid.addEventListener('click', (event) => {
   if (!button) return;
   const active = button.dataset.active === 'true';
   button.dataset.active = String(!active);
-  button.querySelector('span').textContent = active ? '○' : '●';
+  button.classList.toggle('is-active', !active);
   showNotice(active ? 'Đã bỏ đồng cảm.' : 'Đã gửi một dấu hiệu đồng cảm.');
 });
 
