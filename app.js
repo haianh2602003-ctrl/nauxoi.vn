@@ -1,11 +1,5 @@
-const samples = [
-  { text: 'Có những cuộc họp làm mình thấy ý kiến bị đi qua quá nhanh. Mình ước có thêm khoảng lặng để mọi người nói hết câu.', time: 'hôm nay' },
-  { text: 'Mình đã nhận quá nhiều việc vì ngại từ chối. Ngày mai sẽ thử hỏi lại ưu tiên trước khi nhận thêm.', time: 'hôm qua' },
-  { text: 'Một lời cảm ơn nhỏ sau giờ căng thẳng làm cả buổi chiều dễ thở hơn nhiều.', time: '3 ngày trước' },
-  { text: 'Mình muốn thử nói rõ giới hạn của mình trong tuần này.', time: '4 ngày trước' },
-  { text: 'Mong những buổi họp có thêm khoảng dừng để mọi người kịp suy nghĩ.', time: 'tuần trước' },
-  { text: 'Hôm nay mình đã nghỉ năm phút trước khi trả lời một email khó.', time: 'tuần trước' }
-];
+const samples = [];
+const CARD_LIFETIME_MS = 3 * 24 * 60 * 60 * 1000;
 
 const SUPABASE_URL = 'https://qtwdqoeogcslimshfemq.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_IHnTSnKC5n7gQ6kVp2MWIA_IocB-6VJ';
@@ -52,7 +46,14 @@ function relativeTime(value) {
 
 async function loadPublishedEntries() {
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/notes?select=id,body,created_at&order=created_at.desc&limit=48`, { headers: API_HEADERS });
+    const createdAfter = new Date(Date.now() - CARD_LIFETIME_MS).toISOString();
+    const params = new URLSearchParams({
+      select: 'id,body,created_at',
+      order: 'created_at.desc',
+      limit: '48',
+      created_at: `gte.${createdAfter}`
+    });
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/notes?${params}`, { headers: API_HEADERS });
     if (!response.ok) throw new Error('Không thể tải nhật ký chung.');
     const notes = await response.json();
     publishedEntries = notes.map((note) => ({ id: note.id, text: note.body, time: relativeTime(note.created_at) }));
