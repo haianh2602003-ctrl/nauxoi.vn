@@ -18,7 +18,6 @@ function showNotice(message) { notice.textContent = message; notice.classList.ad
 input.addEventListener('input', () => { count.textContent = input.value.length; });
 form.addEventListener('submit', (event) => {
   event.preventDefault(); const text = input.value.trim();
-  if (text.length < 12) return showNotice('Viết thêm một chút nhé — ít nhất 12 ký tự.');
   if (/(@|https?:\/\/|\b[A-ZÀ-Ỹ][a-zà-ỹ]{1,}\s+[A-ZÀ-Ỹ][a-zà-ỹ]{1,})/.test(text)) return showNotice('Hãy xoá tên, liên kết hoặc dấu hiệu có thể nhận diện người khác trước khi lưu.');
   const entries = savedEntries(); entries.unshift({ text, time: 'vừa xong' }); localStorage.setItem('work-journal-entries', JSON.stringify(entries)); form.reset(); count.textContent = '0'; render(); showNotice('Đã lưu trong trình duyệt của bạn.'); document.querySelector('#nhat-ky').scrollIntoView({ behavior: 'smooth' });
 });
