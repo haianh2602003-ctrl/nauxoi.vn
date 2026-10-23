@@ -29,11 +29,11 @@ h1, h2 { margin: 0; font-size: clamp(38px, 5vw, 64px); line-height: .98; letter-
 .entry-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 20px; padding-top: 30px; }
 .entry-column { min-width: 0; display: grid; gap: 20px; align-content: start; }
 .entry-card { min-width: 0; border: 1px solid var(--rule); background: var(--paper); break-inside: avoid; }
-.entry-object { position: relative; min-height: 188px; max-height: 332px; padding: 23px 66px 62px 23px; overflow: auto; color: var(--ink); font-size: clamp(23px, 2.1vw, 33px); line-height: 1.08; letter-spacing: -.065em; overflow-wrap: anywhere; white-space: pre-wrap; }
+.entry-object { position: relative; min-height: 188px; max-height: 420px; padding: 23px 66px 68px 23px; overflow: auto; color: var(--ink); font-size: clamp(23px, 2.1vw, 33px); line-height: 1.1; letter-spacing: -.04em; overflow-wrap: anywhere; white-space: pre-wrap; }
 .entry-column .entry-card:nth-child(4n + 2) .entry-object { background: #e1e5e3; }
 .entry-column .entry-card:nth-child(4n + 3) .entry-object { background: #efefed; }
 .entry-column:first-child .entry-card:first-child .entry-object { background: var(--ink); color: white; }
-.entry-meta { position: absolute; left: 23px; bottom: 23px; color: currentColor; opacity: .62; font-size: 13px; line-height: 1.35; }
+.entry-meta { position: absolute; left: 23px; bottom: 23px; color: currentColor; opacity: .62; font-size: 13px; line-height: 1.35; letter-spacing: -.02em; }
 .card-actions { position: absolute; right: 17px; bottom: 16px; display: flex; gap: 8px; }
 .empathy, .share-card { width: 29px; height: 29px; display: grid; place-items: center; border: 1px solid currentColor; border-radius: 50%; background: transparent; color: currentColor; padding: 0; }
 .empathy svg { width: 15px; height: 15px; fill: transparent; stroke: currentColor; stroke-width: 1.6; }
@@ -92,7 +92,7 @@ footer span:first-child { color: var(--ink); }
   .text-link { margin-top: 26px; }
   .entry-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-top: 20px; }
   .entry-column { gap: 12px; }
-  .entry-object { min-height: 166px; padding: 18px; font-size: 25px; }
+  .entry-object { min-height: 190px; max-height: 400px; padding: 18px 62px 62px 18px; font-size: 24px; }
   .compose-intro { padding-top: 52px; }
   .entry-form textarea { min-height: 42vh; }
 }
@@ -105,8 +105,9 @@ footer span:first-child { color: var(--ink); }
   .feed-heading { padding-bottom: 22px; }
   .muted { margin-top: 14px; font-size: 15px; }
   .entry-grid { grid-template-columns: 1fr; }
-  .entry-object { min-height: 152px; max-height: 280px; padding-right: 58px; font-size: 27px; }
-  .entry-meta { left: 18px; bottom: 18px; }
+  .entry-object { min-height: 220px; max-height: none; padding: 20px 70px 72px 20px; font-size: 24px; line-height: 1.12; }
+  .entry-meta { left: 20px; bottom: 20px; font-size: 13px; }
+  .card-actions { right: 18px; bottom: 18px; }
   footer > div { min-height: 92px; display: grid; align-content: center; gap: 6px; }
   .compose-header { min-height: 68px; }
   .compose-intro { padding: 40px 0 26px; }
