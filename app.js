@@ -16,6 +16,7 @@ const composeView = document.querySelector('#compose-view');
 const openButtons = document.querySelectorAll('[data-open-compose]');
 const closeButtons = document.querySelectorAll('[data-close-compose]');
 const shareDialog = document.querySelector('#share-dialog');
+let selectedEntry = null;
 
 function escapeHTML(value) {
   const div = document.createElement('div');
@@ -36,7 +37,7 @@ function columnCount() {
 
 function card(entry, index) {
   return `<article class="entry-card">
-    <div class="entry-object"><span>${escapeHTML(entry.text)}</span><div class="entry-meta"><span>ẩn danh · ${entry.time}</span></div><div class="card-actions"><button type="button" class="share-card" data-open-share aria-label="Chia sẻ card này"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5h5v5M19 5l-9 9M5 8v11h11v-6"/></svg></button><button type="button" class="empathy" data-index="${index}" aria-label="Đồng cảm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2S4 15.6 4 9.5C4 6.8 6 5 8.5 5c1.7 0 2.9.9 3.5 2 0 0 1.8-2 3.5-2C18 5 20 6.8 20 9.5c0 6.1-8 10.7-8 10.7Z"/></svg></button></div></div>
+    <div class="entry-object"><span>${escapeHTML(entry.text)}</span><div class="entry-meta"><span>ẩn danh · ${entry.time}</span></div><div class="card-actions"><button type="button" class="share-card" data-index="${index}" aria-label="Chia sẻ card này"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5h5v5M19 5l-9 9M5 8v11h11v-6"/></svg></button><button type="button" class="empathy" data-index="${index}" aria-label="Đồng cảm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2S4 15.6 4 9.5C4 6.8 6 5 8.5 5c1.7 0 2.9.9 3.5 2 0 0 1.8-2 3.5-2C18 5 20 6.8 20 9.5c0 6.1-8 10.7-8 10.7Z"/></svg></button></div></div>
   </article>`;
 }
 
@@ -66,11 +67,12 @@ function closeCompose() {
 
 function shareLink() {
   const url = new URL(window.location.href);
-  url.hash = 'nhat-ky';
+  url.hash = `card=${encodeURIComponent(JSON.stringify(selectedEntry || samples[0]))}`;
   return url.toString();
 }
 
-function openShareMenu() {
+function openShareMenu(entry) {
+  selectedEntry = entry;
   shareDialog.hidden = false;
   document.body.style.overflow = 'hidden';
   shareDialog.querySelector('[data-close-share]').focus();
@@ -96,7 +98,7 @@ async function copyShareLink() {
     helper.remove();
   }
   closeShareMenu();
-  showNotice('Đã sao chép liên kết nhật ký.');
+  showNotice('Đã sao chép liên kết của card.');
 }
 
 openButtons.forEach((button) => button.addEventListener('click', openCompose));
@@ -146,7 +148,7 @@ form.addEventListener('submit', (event) => {
 
 grid.addEventListener('click', (event) => {
   const shareButton = event.target.closest('.share-card');
-  if (shareButton) { openShareMenu(); return; }
+  if (shareButton) { openShareMenu(allEntries()[Number(shareButton.dataset.index)]); return; }
   const button = event.target.closest('.empathy');
   if (!button) return;
   const active = button.dataset.active === 'true';
@@ -165,4 +167,20 @@ function showNotice(message) {
   timeout = setTimeout(() => notice.classList.remove('is-visible'), 3600);
 }
 
-render();
+function sharedCardFromUrl() {
+  try {
+    const raw = new URLSearchParams(window.location.hash.slice(1)).get('card');
+    const entry = raw ? JSON.parse(raw) : null;
+    return entry && typeof entry.text === 'string' && typeof entry.time === 'string' ? entry : null;
+  } catch { return null; }
+}
+
+function renderSharedCard(entry) {
+  document.title = 'Mẩu ghi ẩn danh · Nhật ký công sở';
+  document.body.classList.add('shared-card-page');
+  document.querySelector('main').innerHTML = `<section class="shared-card-view"><article class="shared-card"><p>${escapeHTML(entry.text)}</p><span>ẩn danh · ${escapeHTML(entry.time)}</span></article></section>`;
+}
+
+const sharedCard = sharedCardFromUrl();
+if (sharedCard) renderSharedCard(sharedCard);
+else render();
