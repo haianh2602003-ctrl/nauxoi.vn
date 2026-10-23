@@ -20,6 +20,18 @@ const closeButtons = document.querySelectorAll('[data-close-compose]');
 const shareDialog = document.querySelector('#share-dialog');
 let selectedEntry = null;
 let publishedEntries = [];
+const EMPATHY_STORAGE_KEY = 'nhat-ky-cong-so-empathy';
+
+function empathizedNoteIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(EMPATHY_STORAGE_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+
+function rememberEmpathy(id) {
+  const ids = empathizedNoteIds();
+  ids.add(id);
+  localStorage.setItem(EMPATHY_STORAGE_KEY, JSON.stringify([...ids]));
+}
 
 function escapeHTML(value) {
   const div = document.createElement('div');
@@ -48,7 +60,7 @@ async function loadPublishedEntries() {
   try {
     const createdAfter = new Date(Date.now() - CARD_LIFETIME_MS).toISOString();
     const params = new URLSearchParams({
-      select: 'id,body,created_at',
+      select: 'id,body,created_at,empathy_count',
       order: 'created_at.desc',
       limit: '48',
       created_at: `gte.${createdAfter}`
@@ -56,7 +68,7 @@ async function loadPublishedEntries() {
     const response = await fetch(`${SUPABASE_URL}/rest/v1/notes?${params}`, { headers: API_HEADERS });
     if (!response.ok) throw new Error('Không thể tải nhật ký chung.');
     const notes = await response.json();
-    publishedEntries = notes.map((note) => ({ id: note.id, text: note.body, time: relativeTime(note.created_at) }));
+    publishedEntries = notes.map((note) => ({ id: note.id, text: note.body, time: relativeTime(note.created_at), empathyCount: note.empathy_count || 0 }));
     render();
   } catch {
     showNotice('Chưa thể tải nhật ký chung. Hãy thử lại sau.');
@@ -70,8 +82,10 @@ function columnCount() {
 }
 
 function card(entry, index) {
+  const isEmpathized = entry.id && empathizedNoteIds().has(entry.id);
+  const empathyCount = Number(entry.empathyCount || 0);
   return `<article class="entry-card">
-    <div class="entry-object"><span>${escapeHTML(entry.text)}</span><div class="entry-meta"><span>ẩn danh · ${entry.time}</span></div><div class="card-actions"><button type="button" class="share-card" data-index="${index}" aria-label="Chia sẻ card này"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5h5v5M19 5l-9 9M5 8v11h11v-6"/></svg></button><button type="button" class="empathy" data-index="${index}" aria-label="Đồng cảm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2S4 15.6 4 9.5C4 6.8 6 5 8.5 5c1.7 0 2.9.9 3.5 2 0 0 1.8-2 3.5-2C18 5 20 6.8 20 9.5c0 6.1-8 10.7-8 10.7Z"/></svg></button></div></div>
+    <div class="entry-object"><span>${escapeHTML(entry.text)}</span><div class="entry-meta"><span>ẩn danh · ${entry.time}</span></div><div class="card-actions"><button type="button" class="share-card" data-index="${index}" aria-label="Chia sẻ card này"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5h5v5M19 5l-9 9M5 8v11h11v-6"/></svg></button><div class="empathy-wrap"><span class="empathy-count" aria-label="${empathyCount} lượt đồng cảm">${empathyCount}</span><button type="button" class="empathy${isEmpathized ? ' is-active' : ''}" data-index="${index}" aria-label="Đồng cảm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2S4 15.6 4 9.5C4 6.8 6 5 8.5 5c1.7 0 2.9.9 3.5 2 0 0 1.8-2 3.5-2C18 5 20 6.8 20 9.5c0 6.1-8 10.7-8 10.7Z"/></svg></button></div></div></div>
   </article>`;
 }
 
@@ -179,7 +193,7 @@ form.addEventListener('submit', async (event) => {
     });
     if (!response.ok) throw new Error('Không thể đăng mẩu ghi.');
     const [note] = await response.json();
-    publishedEntries.unshift({ id: note.id, text: note.body, time: relativeTime(note.created_at) });
+    publishedEntries.unshift({ id: note.id, text: note.body, time: relativeTime(note.created_at), empathyCount: note.empathy_count || 0 });
     form.reset();
     count.textContent = '0';
     render();
@@ -194,15 +208,33 @@ form.addEventListener('submit', async (event) => {
   }
 });
 
-grid.addEventListener('click', (event) => {
+grid.addEventListener('click', async (event) => {
   const shareButton = event.target.closest('.share-card');
   if (shareButton) { openShareMenu(allEntries()[Number(shareButton.dataset.index)]); return; }
   const button = event.target.closest('.empathy');
   if (!button) return;
-  const active = button.dataset.active === 'true';
-  button.dataset.active = String(!active);
-  button.classList.toggle('is-active', !active);
-  showNotice(active ? 'Đã bỏ đồng cảm.' : 'Đã gửi một dấu hiệu đồng cảm.');
+  const entry = allEntries()[Number(button.dataset.index)];
+  if (!entry?.id) return;
+  if (empathizedNoteIds().has(entry.id)) {
+    showNotice('Bạn đã gửi đồng cảm cho mẩu ghi này.');
+    return;
+  }
+  button.disabled = true;
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_empathy`, {
+      method: 'POST',
+      headers: API_HEADERS,
+      body: JSON.stringify({ note_id: entry.id })
+    });
+    if (!response.ok) throw new Error('Không thể gửi đồng cảm.');
+    entry.empathyCount = await response.json();
+    rememberEmpathy(entry.id);
+    render();
+    showNotice('Đã gửi đồng cảm. Lượt đếm đã được công khai.');
+  } catch {
+    button.disabled = false;
+    showNotice('Chưa thể gửi đồng cảm. Hãy thử lại sau.');
+  }
 });
 
 let resizeTimer;
