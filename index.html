@@ -70,6 +70,20 @@
     </section>
 
     <div class="notice" id="notice" role="status" aria-live="polite"></div>
+    <section class="share-dialog" id="share-dialog" role="dialog" aria-modal="true" aria-labelledby="share-title" hidden>
+      <div class="share-dialog__panel">
+        <button class="share-dialog__close" type="button" data-close-share aria-label="Đóng menu chia sẻ">×</button>
+        <p class="eyebrow">Chia sẻ</p>
+        <h2 id="share-title">Gửi nhật ký này cho ai đó</h2>
+        <p class="share-dialog__copy">Liên kết sẽ mở trang nhật ký gần đây.</p>
+        <div class="share-options">
+          <button type="button" data-share-platform="zalo"><span class="platform-mark zalo">Z</span><span>Zalo</span></button>
+          <button type="button" data-share-platform="facebook"><span class="platform-mark facebook">f</span><span>Facebook</span></button>
+          <button type="button" data-share-platform="instagram"><span class="platform-mark instagram">◎</span><span>Instagram</span></button>
+          <button type="button" data-share-platform="copy"><span class="platform-mark copy">↗</span><span>Sao chép liên kết</span></button>
+        </div>
+      </div>
+    </section>
     <script src="app.js"></script>
   </body>
 </html>
