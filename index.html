@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f0e12" />
+    <meta name="description" content="Nhật ký công sở — nơi viết để xả áp, không công kích." />
+    <title>Nhật ký công sở</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="nav-shell">
+        <a class="wordmark" href="#top" aria-label="Nhật ký công sở, về đầu trang">Nhật ký công sở</a>
+        <nav aria-label="Điều hướng chính">
+          <a href="#viet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M7 16.5 16.8 6.7l2.5 2.5-9.8 9.8L6 20zM15.5 8l2.5 2.5"/></svg><span>viết</span></a>
+          <a href="#nhat-ky"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg><span>nhật ký</span></a>
+          <a href="#nguyen-tac"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 21 20H3zM12 9v5M12 17h.01"/></svg><span>nguyên tắc</span></a>
+        </nav>
+      </div>
+    </header>
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-shell">
+          <p class="eyebrow">một nơi để đặt xuống</p>
+          <h1 id="hero-title">viết cho nhẹ lòng.<br />đọc cho hiểu nhau.</h1>
+          <p class="hero-copy">Một nhật ký ẩn danh cho những ngày công sở khó nói. Hãy viết về tình huống, không gọi tên con người.</p>
+          <a class="hero-link" href="#viet">bắt đầu viết ↓</a>
+        </div>
+        <p class="hero-label">NHẬT KÝ CÔNG SỞ / 01</p>
+      </section>
+      <section class="compose-section section-shell" id="viet" aria-labelledby="compose-title">
+        <div class="section-heading"><p class="eyebrow">01 / ghi lại</p><h2 id="compose-title">một điều bạn muốn nói</h2></div>
+        <form id="entry-form" class="entry-form">
+          <label for="entry">Nhật ký của bạn</label>
+          <textarea id="entry" name="entry" maxlength="600" required placeholder="Hôm nay mình thấy…"></textarea>
+          <div class="form-footer"><p><span id="count">0</span>/600 · Đừng nêu tên, phòng ban, ảnh, hay chi tiết có thể nhận diện ai đó.</p><button type="submit">lưu ẩn danh</button></div>
+        </form>
+      </section>
+      <section class="feed-section" id="nhat-ky" aria-labelledby="feed-title">
+        <div class="section-shell section-heading feed-heading"><p class="eyebrow">02 / những mẩu ghi</p><h2 id="feed-title">nhật ký gần đây</h2><p class="muted">Không có bình luận công kích. Bạn có thể đồng cảm, hoặc bỏ qua.</p></div>
+        <div class="entry-grid section-shell" id="entry-grid" aria-live="polite"></div>
+      </section>
+      <section class="principles section-shell" id="nguyen-tac" aria-labelledby="principles-title">
+        <div class="section-heading"><p class="eyebrow">03 / trước khi đăng</p><h2 id="principles-title">giữ an toàn cho nhau</h2></div>
+        <ol>
+          <li><span>01</span><p>Viết về hành vi và cảm nhận, không phán xét con người.</p></li>
+          <li><span>02</span><p>Bỏ tên, chức danh cụ thể, công ty, ảnh chụp và mọi dấu vết nhận diện.</p></li>
+          <li><span>03</span><p>Nếu có quấy rối, phân biệt đối xử hoặc nguy hiểm, hãy lưu bằng chứng và tìm kênh hỗ trợ chính thức.</p></li>
+        </ol>
+      </section>
+    </main>
+    <footer><div class="section-shell"><span>Nhật ký công sở</span><span>một không gian ẩn danh, không phải nơi truy lùng</span><a href="#nguyen-tac">nguyên tắc cộng đồng</a></div></footer>
+    <div class="notice" id="notice" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
