@@ -15,6 +15,7 @@ const notice = document.querySelector('#notice');
 const composeView = document.querySelector('#compose-view');
 const openButtons = document.querySelectorAll('[data-open-compose]');
 const closeButtons = document.querySelectorAll('[data-close-compose]');
+const shareDialog = document.querySelector('#share-dialog');
 
 function escapeHTML(value) {
   const div = document.createElement('div');
@@ -35,8 +36,7 @@ function columnCount() {
 
 function card(entry, index) {
   return `<article class="entry-card">
-    <div class="entry-object"><span>${escapeHTML(entry.text)}</span><button type="button" class="empathy" data-index="${index}" aria-label="Đồng cảm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2S4 15.6 4 9.5C4 6.8 6 5 8.5 5c1.7 0 2.9.9 3.5 2 0 0 1.8-2 3.5-2C18 5 20 6.8 20 9.5c0 6.1-8 10.7-8 10.7Z"/></svg></button></div>
-    <div class="entry-meta"><span>ẩn danh · ${entry.time}</span></div>
+    <div class="entry-object"><span>${escapeHTML(entry.text)}</span><div class="entry-meta"><span>ẩn danh · ${entry.time}</span></div><div class="card-actions"><button type="button" class="share-card" data-open-share aria-label="Chia sẻ card này"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5h5v5M19 5l-9 9M5 8v11h11v-6"/></svg></button><button type="button" class="empathy" data-index="${index}" aria-label="Đồng cảm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2S4 15.6 4 9.5C4 6.8 6 5 8.5 5c1.7 0 2.9.9 3.5 2 0 0 1.8-2 3.5-2C18 5 20 6.8 20 9.5c0 6.1-8 10.7-8 10.7Z"/></svg></button></div></div>
   </article>`;
 }
 
@@ -64,9 +64,65 @@ function closeCompose() {
   document.body.style.overflow = '';
 }
 
+function shareLink() {
+  const url = new URL(window.location.href);
+  url.hash = 'nhat-ky';
+  return url.toString();
+}
+
+function openShareMenu() {
+  shareDialog.hidden = false;
+  document.body.style.overflow = 'hidden';
+  shareDialog.querySelector('[data-close-share]').focus();
+}
+
+function closeShareMenu() {
+  shareDialog.hidden = true;
+  if (composeView.hidden) document.body.style.overflow = '';
+}
+
+async function copyShareLink() {
+  const url = shareLink();
+  try {
+    await navigator.clipboard.writeText(url);
+  } catch {
+    const helper = document.createElement('textarea');
+    helper.value = url;
+    helper.style.position = 'fixed';
+    helper.style.opacity = '0';
+    document.body.append(helper);
+    helper.select();
+    document.execCommand('copy');
+    helper.remove();
+  }
+  closeShareMenu();
+  showNotice('Đã sao chép liên kết nhật ký.');
+}
+
 openButtons.forEach((button) => button.addEventListener('click', openCompose));
 closeButtons.forEach((button) => button.addEventListener('click', closeCompose));
-document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !composeView.hidden) closeCompose(); });
+shareDialog.querySelector('[data-close-share]').addEventListener('click', closeShareMenu);
+shareDialog.querySelectorAll('[data-share-platform]').forEach((button) => button.addEventListener('click', async () => {
+  const platform = button.dataset.sharePlatform;
+  const url = shareLink();
+  if (platform === 'facebook') {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'noopener,noreferrer');
+    closeShareMenu();
+  } else if (platform === 'zalo') {
+    window.open(`https://zalo.me/share?url=${encodeURIComponent(url)}`, '_blank', 'noopener,noreferrer');
+    closeShareMenu();
+  } else if (platform === 'instagram' && navigator.share) {
+    try { await navigator.share({ title: 'Nhật ký công sở', text: 'Đọc những mẩu ghi ẩn danh tại Nhật ký công sở.', url }); } catch { return; }
+    closeShareMenu();
+  } else {
+    await copyShareLink();
+  }
+}));
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  if (!shareDialog.hidden) closeShareMenu();
+  else if (!composeView.hidden) closeCompose();
+});
 
 input.addEventListener('input', () => { count.textContent = input.value.length; });
 form.addEventListener('submit', (event) => {
@@ -89,6 +145,8 @@ form.addEventListener('submit', (event) => {
 });
 
 grid.addEventListener('click', (event) => {
+  const shareButton = event.target.closest('.share-card');
+  if (shareButton) { openShareMenu(); return; }
   const button = event.target.closest('.empathy');
   if (!button) return;
   const active = button.dataset.active === 'true';
