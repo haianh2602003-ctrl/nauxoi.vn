@@ -164,8 +164,8 @@ form.addEventListener('submit', async (event) => {
   event.preventDefault();
   const text = input.value.trim();
   if (!text) { showNotice('Hãy nhập một mẩu ghi để đăng.'); return; }
-  if (/(@|https?:\/\/|\b[A-ZÀ-Ỹ][a-zà-ỹ]{1,}\s+[A-ZÀ-Ỹ][a-zà-ỹ]{1,})/.test(text)) {
-    showNotice('Hãy xoá tên, liên kết hoặc dấu hiệu có thể nhận diện người khác trước khi đăng.'); return;
+  if (/(@|https?:\/\/)/.test(text)) {
+    showNotice('Không thể đăng liên kết hoặc địa chỉ liên hệ.'); return;
   }
   const submit = form.querySelector('button[type="submit"]');
   submit.disabled = true;
