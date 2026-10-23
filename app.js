@@ -233,4 +233,6 @@ if (sharedCard) renderSharedCard(sharedCard);
 else {
   render();
   loadPublishedEntries();
+  window.addEventListener('visibilitychange', () => { if (!document.hidden) loadPublishedEntries(); });
+  window.setInterval(() => { if (!document.hidden) loadPublishedEntries(); }, 15000);
 }
